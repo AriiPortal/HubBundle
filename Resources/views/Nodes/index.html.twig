@@ -1,0 +1,123 @@
+{% extends "AriiHubBundle::layout.html.twig" %}
+{% block body %}
+<script type="text/javascript">
+var max_history = 0; // pas d'historique
+var chained = 0; // que des standalone
+var only_warning = 0; // que les problemes
+var update=30;
+var autorefresh;
+var jobtype = "CMD"; // Type de job en cours
+var myGridToolbar;
+var status;
+var node=0;
+
+dhtmlxEvent(window,"load",function(){     
+    globalLayout = new dhtmlXLayoutObject(document.body,"3L");  
+    globalLayout.cells("a").setWidth(410); 
+    globalLayout.cells("a").hideHeader(); 
+    globalLayout.cells("b").hideHeader(); 
+    globalLayout.cells("c").setText("{{ "Detail" | trans }}"); 
+    globalLayout.cells("c").collapse();
+            
+    globalMenu = globalLayout.cells("a").attachMenu();
+    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+    globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
+
+    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon.setIconPath( "{{ asset('/bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_Hub_ribbon') }}");
+    myRibbon.attachEvent("onStateChange", StateRibbon );
+    myRibbon.attachEvent("onClick", ClickRibbon );
+
+    myTree = globalLayout.cells("a").attachTree();
+    myTree.setImagesPath("{{ asset('bundles/ariicore/images/tree/') }}");
+    myTree.load("{{ url('xml_Hub_categories_tree') }}");
+    myTree.attachEvent("onClick",function(id){        
+    });
+
+    myNodes = globalLayout.cells("b").attachGrid();
+    myNodes.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
+    myNodes.setHeader("{{ "Category" | trans }},{{ "Node" | trans }},{{ "Title" | trans }},{{ "Description" | trans }},{{ "Status" | trans }},{{ "Heartbeat" | trans }}");
+    myNodes.attachHeader("#select_filter,#text_filter,#text_filter,#text_filter,#select_filter,#text_filter");
+    myNodes.setInitWidths("200,200,*,*,120,140");
+    myNodes.setColAlign("left,left,left,left,left,right");
+    myNodes.setColTypes("ro,ro,ro,ro,ro,ro");
+    myNodes.setColSorting("str,str,str,str,str,str");
+    myNodes.enableAlterCss("","");
+    myNodes.init();
+    myNodes.load( "{{ url('xml_Hub_nodes') }}");
+    myNodes.attachEvent("onRowDblClicked", Detail );
+
+    myGridToolbar = globalLayout.cells("b").attachToolbar();
+    myGridToolbar.setIconsPath("{{ asset('bundles/ariicore/images/toolbar/') }}");
+    myGridToolbar.loadStruct( "{{ url('xml_Hub_nodes_grid_toolbar') }}");
+    myGridToolbar.attachEvent("onClick",function(itemid){
+         switch (itemid) {
+            case 'refresh':
+                globalLayout.cells("b").progressOn();
+                myNodes.load( "{{ url('xml_Hub_nodes') }}", function() {
+                    globalLayout.cells("b").progressOff();
+                });
+                break;
+            case "print":
+                myNodes.printView();
+                break;
+            case "heart":
+                globalLayout.cells("b").progressOn();
+                myNodes.forEachRow(function(id){
+                    dhx4.ajax.get( "{{ url('html_Hub_node_check') }}?id="+id, function(loader,response) {
+                        dhtmlx.message({
+                            type: "Notice",
+                            text: loader.xmlDoc.responseText,
+                            width: "800"
+                        });
+                        myNodes.load( "{{ url('xml_Hub_nodes') }}", function() {});    
+                    } );
+                });
+                globalLayout.cells("b").progressOff();
+                break;
+            default:
+                alert(itemid);
+                break;
+        }
+    });
+
+    globalLayout.attachEvent("onContentLoaded", function(id){
+        globalLayout.cells("b").progressOn();
+        myNodes.load( "{{ url('xml_Hub_nodes') }}", function() {
+            globalLayout.cells("b").progressOff();
+        });       
+    });
+
+    // Premier chargement avant le smart rendering
+    GlobalRefresh();
+    autorefresh = setInterval( "GridRefresh()",update*1000);
+});
+
+function GlobalRefresh() {
+    clearInterval( autorefresh );
+    GridRefresh();
+    autorefresh = setInterval( "GridRefresh()", update*1000 );
+}
+
+function GridRefresh() {
+    var currentTime = new Date();
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+    var seconds = currentTime.getSeconds();
+    if (minutes < 10){
+    minutes = "0" + minutes;
+    }
+    if (seconds < 10){
+    seconds = "0" + seconds;
+    }
+    globalLayout.progressOff();
+}
+
+function Detail(id) {
+    globalLayout.cells("c").expand();
+    globalLayout.cells("c").attachURL( "{{ url('html_Hub_node_check') }}?id="+id);
+}
+
+</script>
+{% endblock %}

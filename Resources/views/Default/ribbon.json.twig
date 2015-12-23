@@ -1,0 +1,36 @@
+{
+   "items":
+   [
+      {   "type":"block", 
+          text:"{{ "Hub" | trans }}", 
+          "text_pos": "top", 
+          "list":
+          [
+             {   "type": "button", 
+                 text:"", 
+                 "isbig": true, 
+                 "img": "48/hub.png"
+              },
+             {   "type": "buttonSelect", 
+                 text:"", 
+                 "img": "view.png", 
+                 items:
+                 [ 
+                    { id:"menu_nodes", text: "{{ "Nodes" | trans }}", img: "node.png" }
+                 ]
+              }
+          ]
+      },      
+      {   "type":"block", 
+          text:"{{ "Nodes" | trans }}", 
+          "text_pos": "bottom", 
+          "list":
+          [
+             {   "type": "button", 
+                 text:"", 
+                 "img": "48/hub.png"
+              }              
+          ]
+      }
+   ]
+}

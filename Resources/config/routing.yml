@@ -1,0 +1,79 @@
+# --------------------------------------------------------------------------
+# PAGES PRINCIPALES
+# --------------------------------------------------------------------------
+arii_Hub_index:
+    pattern:  /
+    defaults: { _controller: AriiHubBundle:Default:index }
+
+arii_Hub_readme:
+    pattern:  /readme
+    defaults: { _controller: AriiHubBundle:Default:readme }
+
+xml_Hub_toolbar:
+    pattern:  /toolbar.xml
+    defaults: { _controller: AriiHubBundle:Default:toolbar }
+
+json_Hub_ribbon:
+    pattern:  /ribbon.json
+    defaults: { _controller: AriiHubBundle:Default:ribbon }
+
+xml_Hub_menu:
+    pattern:  /menu.xml
+    defaults: { _controller: AriiHubBundle:Default:menu }
+
+xml_Hub_categories_tree:
+    pattern:  /categories.xml
+    defaults: { _controller: AriiHubBundle:Default:categories }
+
+#===========================================================================
+# Nodes
+# --------------------------------------------------------------------------
+arii_Hub_nodes:
+    pattern:  /nodes
+    defaults: { _controller: AriiHubBundle:Nodes:index }
+
+xml_Hub_nodes:
+    pattern:  /nodes.xml
+    defaults: { _controller: AriiHubBundle:Nodes:list }
+
+xml_Hub_categories:
+    pattern:  /nodes/grid.xml
+    defaults: { _controller: AriiHubBundle:Nodes:grid }
+
+xml_Hub_nodes_grid_toolbar:
+    pattern:  /nodes/toolbar.xml
+    defaults: { _controller: AriiHubBundle:Nodes:toolbar }
+
+#===========================================================================
+# Node
+# --------------------------------------------------------------------------
+arii_Hub_node:
+    pattern:  /node
+    defaults: { _controller: AriiHubBundle:Node:index }
+
+xml_Hub_node_cron:
+    pattern:  /node/cron.xml
+    defaults: { _controller: AriiHubBundle:Node:cron }
+
+html_Hub_node_check:
+    pattern:  /node/check.html
+    defaults: { _controller: AriiHubBundle:Node:check }
+        
+xml_Hub_node_cron_file:
+    pattern:  /node/file.html
+    defaults: { _controller: AriiHubBundle:Node:file }
+
+#===========================================================================
+# Cron
+# --------------------------------------------------------------------------
+arii_Hub_cron:
+    pattern:  /cron
+    defaults: { _controller: AriiHubBundle:Cron:index }
+
+xml_Hub_categories:
+    pattern:  /cron/grid.xml
+    defaults: { _controller: AriiHubBundle:Cron:grid }
+
+xml_Hub_nodes_cron_toolbar:
+    pattern:  /cron/toolbar.xml
+    defaults: { _controller: AriiHubBundle:Cron:toolbar }

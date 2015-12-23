@@ -1,0 +1,112 @@
+{% extends "AriiHubBundle::layout.html.twig" %}
+{% block body %}
+<script type="text/javascript">
+var max_history = 0; // pas d'historique
+var chained = 0; // que des standalone
+var only_warning = 0; // que les problemes
+var update=30;
+var autorefresh;
+var jobtype = "CMD"; // Type de job en cours
+var myGridToolbar;
+var status;
+var node=0;
+
+dhtmlxEvent(window,"load",function(){     
+    globalLayout = new dhtmlXLayoutObject(document.body,"3L");  
+    globalLayout.cells("a").setWidth(410); 
+    globalLayout.cells("a").hideHeader(); 
+    globalLayout.cells("b").hideHeader(); 
+    globalLayout.cells("c").setText("{{ "Detail" | trans }}"); 
+    globalLayout.cells("c").collapse();
+            
+    globalMenu = globalLayout.cells("a").attachMenu();
+    globalMenu.setIconsPath( "{{ asset('/bundles/ariicore/images/menu/') }}" );
+    globalMenu.loadStruct("{{ url('xml_menu') }}?route={{ app.request.attributes.get('_route') }}");
+
+    myRibbon = globalLayout.cells("a").attachRibbon(); 
+    myRibbon.setIconPath( "{{ asset('/bundles/ariicore/images/ribbon/') }}" );
+    myRibbon.loadStruct("{{ url('json_Hub_ribbon') }}");
+    myRibbon.attachEvent("onStateChange", StateRibbon );
+    myRibbon.attachEvent("onClick", ClickRibbon );
+
+    myNodes = globalLayout.cells("b").attachGrid();
+    myNodes.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
+    myNodes.setHeader("{{ "Node" | trans }},{{ "Category" | trans }}");
+    myNodes.attachHeader("#text_filter,#select_filter");
+    myNodes.setInitWidths("*,*");
+    myNodes.setColAlign("left,left");
+    myNodes.setColTypes("ro,ro");
+    myNodes.setColSorting("str,str");
+    myNodes.enableAlterCss("","");
+    myNodes.init();
+    myNodes.load( "{{ url('xml_Hub_categories') }}");
+
+    myCron = globalLayout.cells("b").attachGrid();
+    myCron.setImagePath( "{{ asset('bundles/ariicore/images/treegrid/') }}");
+    myCron.setHeader("{{ "Minutes" | trans }},{{ "Hours" | trans }},{{ "Day" | trans }},{{ "Month" | trans }},{{ "Week day" | trans }},{{ "Task" | trans }},{{ "Out" | trans }},{{ "Err" | trans }},{{ "Comment" | trans }}");
+    myCron.attachHeader("#numeric_filter,#numeric_filter,#numeric_filter,#numeric_filter,#numeric_filter,#text_filter,#text_filter,#text_filter,#text_filter");
+    myCron.setInitWidths("100,100,100,100,100,*,*,*,*");
+    myCron.setColAlign("right,right,right,right,right,left,left,left,left");
+    myCron.setColTypes("ro,ro,ro,ro,ro,ro,ro,ro,ro");
+    myCron.setColSorting("int,int,int,int,int,str,str,str,str");
+    myCron.enableAlterCss("","");
+    myCron.init();
+    myCron.attachEvent("onRowDblClicked",File );
+
+    myCron.setColumnHidden(7,true);
+    myCron.setColumnHidden(8,true);
+
+    myTabbar = globalLayout.cells("c").attachTabbar();
+    myTabbar.addTab("script","{{ "Script" | trans }}","200px", null, true);
+    myTabbar.addTab("out","{{ "Standard output" | trans }}","200px");
+    myTabbar.addTab("err","{{ "Error output" | trans }}","200px");
+    
+    // Premier chargement avant le smart rendering
+    GlobalRefresh();
+    autorefresh = setInterval( "GridRefresh()",update*1000);
+});
+
+function GlobalRefresh() {
+    clearInterval( autorefresh );
+    GridRefresh();
+    autorefresh = setInterval( "GridRefresh()", update*1000 );
+}
+
+function GridRefresh() {
+    var currentTime = new Date();
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+    var seconds = currentTime.getSeconds();
+    if (minutes < 10){
+    minutes = "0" + minutes;
+    }
+    if (seconds < 10){
+    seconds = "0" + seconds;
+    }
+    globalLayout.progressOff();
+}
+
+function Cron(id) {
+    globalLayout.cells("b").progressOn();
+    myCron.clearAll();
+    node = id;
+    myCron.load( "{{ url('xml_Hub_node_cron') }}?id="+id, function() {
+        globalLayout.cells("b").progressOff();
+        myNodes.load( "{{ url('xml_Hub_categories') }}");
+    });    
+}
+
+function File(id) {
+    myTabbar.cells("script").attachURL("{{ url('xml_Hub_node_cron_file') }}?id="+node+"&file="+myCron.cells(id,5).getValue());
+    myTabbar.cells("out").attachURL("{{ url('xml_Hub_node_cron_file') }}?id="+node+"&file="+myCron.cells(id,6).getValue());
+    if (myCron.cells(id,6).getValue()!=myCron.cells(id,7).getValue()) {
+        myTabbar.cells("err").attachURL("{{ url('xml_Hub_node_cron_file') }}?id="+node+"&file="+myCron.cells(id,7).getValue());
+        myTabbar.cells("err").show();        
+    }
+    else
+        myTabbar.cells("err").hide();
+    globalLayout.cells("c").expand();
+}
+
+</script>
+{% endblock %}
